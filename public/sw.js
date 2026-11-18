@@ -1,4 +1,4 @@
-const VERSION = 'veeduria-v5';
+const VERSION = 'veeduria-v6';
 const ARCHIVOS = [
   '/',
   '/index.html',
@@ -10,7 +10,8 @@ const ARCHIVOS = [
   '/iconos/icono-192.png',
   '/iconos/icono-512.png',
   '/js/iconos.js',
-  '/iconos/arbol.svg',
+  '/iconos/comunidad.png',
+  '/iconos/icono-maskable-512.png',
   '/fuentes/archivo-latin-wdth-normal.woff2',
   '/fuentes/atkinson-hyperlegible-latin-400-normal.woff2',
   '/fuentes/atkinson-hyperlegible-latin-700-normal.woff2',
