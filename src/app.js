@@ -1,8 +1,8 @@
 import express from 'express';
 import path from 'node:path';
-import os from 'node:os';
 import QRCode from 'qrcode';
 import { RAIZ } from './config.js';
+import { accesoMovil } from './acceso-movil.js';
 import { abrirDB, agregarPeer } from './db.js';
 import { crearAuth } from './auth.js';
 import { crearModelo } from './modelo.js';
@@ -50,7 +50,7 @@ export function crearNodo(cfg) {
   });
 
   app.get('/api/v1/estado', (req, res) => {
-    res.json({ nodo, hora: new Date().toISOString(), quejas: db.prepare('SELECT COUNT(*) AS n FROM queja').get().n });
+    res.json({ nodo, acceso_movil: accesoMovil(cfg.urlPublica), hora: new Date().toISOString(), quejas: db.prepare('SELECT COUNT(*) AS n FROM queja').get().n });
   });
   app.use('/api/v1/auth', rutasAuth(deps));
   app.use('/api/v1/quejas', rutasQuejas(deps));
@@ -58,15 +58,15 @@ export function crearNodo(cfg) {
   app.use('/api/v1/usuarios', rutasUsuarios(deps));
   app.use('/api/v1', rutasReportes(deps));
 
-  app.get('/qr.png', async (req, res) => {
-    let destino = cfg.urlPublica;
-    if (/localhost|127\.0\.0\.1/.test(destino)) {
-      const ip = Object.values(os.networkInterfaces()).flat().find(i => i && i.family === 'IPv4' && !i.internal);
-      if (ip) destino = destino.replace(/localhost|127\.0\.0\.1/, ip.address);
-    }
-    const png = await QRCode.toBuffer(destino, { width: 360, margin: 2 });
-    res.setHeader('X-Destino-QR', destino);
-    res.type('png').send(png);
+  app.get('/qr.png', async (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    const acceso = accesoMovil(cfg.urlPublica);
+    if (!acceso.url) return res.status(422).json({ error: acceso.mensaje });
+    try {
+      const png = await QRCode.toBuffer(acceso.url, { width: 480, margin: 4, errorCorrectionLevel: 'M' });
+      res.setHeader('X-Destino-QR', acceso.url);
+      res.type('png').send(png);
+    } catch (err) { next(err); }
   });
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));

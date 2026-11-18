@@ -135,13 +135,8 @@ body:not(.sesion-activa) .vista { max-width: 1440px; padding: 0; }
 .acceso-descripcion { margin: .8rem 0 2rem; color: var(--tinta-2); font-size: .98rem; }
 .login .boton.primario { min-height: 49px; }
 .login .boton.primario span { margin-left: auto; font-size: 1.15rem; }
-.login details { margin-top: 1.7rem; padding-top: 1.1rem; border-top: 1px solid var(--regla); font-size: .82rem; }
-.login summary { cursor: pointer; color: var(--tinta-2); padding: .3rem 0; }
-.login table { width: 100%; border-collapse: collapse; margin-top: .6rem; font-size: .78rem; }
-.login td { padding: .55rem .2rem; border-bottom: 1px solid var(--regla); overflow-wrap: anywhere; }
 .acceso-nota { margin: 2rem auto 0; text-align: center; color: var(--tinta-3); font-size: .78rem; }
 .acceso-nota .ico { color: var(--verde-600); margin-right: .3rem; }
-#login-nodo { text-align: center; font-size: .72rem; color: var(--tinta-3); margin: .65rem 0 0; }
 
 /* Tablero: filas limpias, filtros y etiquetas legibles. */
 .encabezado-vista { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
@@ -245,16 +240,6 @@ body:not(.sesion-activa) .vista { max-width: 1440px; padding: 0; }
 .kpi.bien strong { color: var(--verde-700); }
 .kpi.mal { background: var(--amarillo-50); }
 .kpi.mal strong { color: var(--amarillo-700); }
-.barras { display: grid; gap: 1rem; margin-top: 1.3rem; }
-.barra-dato { display: grid; grid-template-columns: 110px 1fr 34px; gap: .8rem; align-items: center; font-size: .9rem; }
-.pista { height: 8px; background: var(--papel); border-radius: 8px; overflow: hidden; }
-.relleno { height: 100%; background: var(--azul-600); border-radius: 8px; }
-.relleno.r-vista { background: var(--azul-400); }
-.relleno.r-en_proceso, .relleno.r-luz, .relleno.r-ruido { background: var(--amarillo-500); }
-.relleno.r-resuelta, .relleno.r-aseo, .relleno.r-mascotas { background: var(--verde-600); }
-.relleno.r-seguridad { background: var(--azul-900); }
-.relleno.r-otro { background: #81958e; }
-.barra-dato b { text-align: right; font-weight: 700; }
 .tabla { width: 100%; border-collapse: collapse; font-size: .9rem; }
 .tabla th, .tabla td { text-align: left; padding: .95rem .8rem; vertical-align: top; }
 .tabla th { font: 550 .73rem var(--f-titulo); color: var(--tinta-2); background: #f5f8f6; border-bottom: 1px solid var(--borde); }
@@ -358,4 +343,77 @@ body:not(.sesion-activa) .vista { max-width: 1440px; padding: 0; }
   .vista, .sesion-activa .vista { max-width: none; margin: 0; padding: 0; }
   .tarjeta, .kpi, .libro { box-shadow: none; break-inside: avoid; }
   .desplazable, .tarjeta:has(> .tabla) { overflow: visible; }
+}
+
+/* Acceso y reportes orientados a la gestión del conjunto. */
+.acceso-ayuda { margin-top: 1.4rem; padding-top: 1.15rem; border-top: 1px solid var(--regla); font-size: .82rem; }
+.reporte-fecha { color: var(--tinta-3); font-size: .8rem; margin: -.5rem 0 1.4rem; }
+.kpis-gestion { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.kpis-gestion .kpi > span { display: block; margin-top: .65rem; color: var(--tinta-2); font-size: .75rem; line-height: 1.5; }
+.graficos-gestion { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 1.35rem; margin-bottom: 1.35rem; }
+.grafico-tarjeta { margin-bottom: 0; }
+.grafico-cabecera { margin-bottom: 1.5rem; }
+.grafico-cabecera .antetitulo { font-size: .62rem; }
+.grafico-cabecera .ayuda { font-size: .82rem; margin-bottom: 0; }
+.anillo-estados { position: relative; width: 210px; max-width: 100%; aspect-ratio: 1; margin: 1rem auto 1.7rem; }
+.anillo-estados svg { display: block; width: 100%; height: 100%; transform: rotate(-90deg); }
+.anillo-estados circle { fill: none; stroke-width: 12; }
+.anillo-base { stroke: var(--regla); }
+.segmento-nueva { stroke: var(--azul-600); }
+.segmento-vista { stroke: var(--azul-400); }
+.segmento-en_proceso { stroke: var(--amarillo-500); }
+.segmento-resuelta { stroke: var(--verde-600); }
+.anillo-centro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.anillo-centro strong { font: 550 2.6rem var(--f-titulo); color: var(--azul-900); letter-spacing: -.05em; }
+.anillo-centro span { font-size: .82rem; color: var(--tinta-2); margin-top: .3rem; }
+.leyenda-estados { list-style: none; margin: 0; padding: 0; }
+.leyenda-estados li { display: grid; grid-template-columns: minmax(0, 1fr) 36px 62px; gap: .6rem; align-items: center; padding: .8rem 0; border-bottom: 1px solid var(--regla); font-size: .85rem; }
+.leyenda-estados li:last-child { border-bottom: 0; }
+.leyenda-nombre { display: flex; align-items: center; gap: .6rem; }
+.leyenda-nombre i { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+.punto-nueva { background: var(--azul-600); }
+.punto-vista { background: var(--azul-400); }
+.punto-en_proceso { background: var(--amarillo-500); }
+.punto-resuelta { background: var(--verde-600); }
+.leyenda-estados strong, .leyenda-estados li > span:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.leyenda-estados li > span:last-child { color: var(--tinta-2); font-size: .78rem; }
+.categorias-escala { display: flex; justify-content: space-between; color: var(--tinta-3); font: 400 .65rem var(--f-mono); padding-bottom: .8rem; border-bottom: 1px solid var(--regla); }
+.categorias-lista { list-style: none; margin: .9rem 0 0; padding: 0; display: grid; gap: .95rem; }
+.categoria-datos { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; font-size: .82rem; margin-bottom: .4rem; }
+.categoria-datos strong { font-variant-numeric: tabular-nums; font-size: .85rem; }
+.categoria-datos small { color: var(--tinta-2); font-size: .73rem; }
+.categoria-pista { height: 7px; background: linear-gradient(to right, transparent calc(50% - .5px), var(--borde) calc(50% - .5px), var(--borde) calc(50% + .5px), transparent calc(50% + .5px)), var(--papel); border-radius: 3px; overflow: hidden; }
+.categoria-pista span { display: block; height: 100%; background: var(--verde-600); border-radius: 3px; }
+.categoria-sin-registros .categoria-datos { color: var(--tinta-3); }
+.grafico-nota { color: var(--tinta-3); font-size: .73rem; line-height: 1.6; margin: 1.2rem 0 0; }
+.grafico-vacio { padding: 1.5rem .5rem; color: var(--tinta-2); font-size: .9rem; text-align: center; line-height: 1.6; }
+.tiempos-gestion { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 1.5rem 0 0; gap: 1.25rem; }
+.tiempos-gestion > div { border-left: 2px solid var(--regla); padding-left: 1rem; }
+.tiempos-gestion dt { color: var(--tinta-2); font-size: .8rem; }
+.tiempos-gestion dd { margin: .6rem 0; font: 550 1.55rem var(--f-titulo); color: var(--azul-900); }
+.tiempos-gestion small { display: block; color: var(--tinta-3); font-size: .76rem; line-height: 1.5; }
+.acceso-movil .qr { margin-top: 1.5rem; align-items: flex-start; }
+.acceso-movil .qr img { width: 208px; height: 208px; padding: 0; flex-shrink: 0; }
+.acceso-movil .qr > div { min-width: 0; flex: 1 1 260px; }
+#enlace-movil { font-family: var(--f-mono); font-size: .8rem; }
+.configuracion-red { border-top: 1px solid var(--regla); padding-top: 1.2rem; margin-top: 1.5rem; }
+.configuracion-red summary { cursor: pointer; font: 550 .9rem var(--f-titulo); color: var(--azul-900); line-height: 1.6; }
+.configuracion-red li { margin-bottom: .7rem; line-height: 1.6; font-size: .9rem; }
+.configuracion-red code { font-family: var(--f-mono); font-size: .8em; overflow-wrap: anywhere; }
+.detalles-nodos { margin-top: 0; }
+.detalles-nodos[open] summary { margin-bottom: 1.2rem; }
+.qr-pendiente { display: flex; align-items: flex-start; gap: 1rem; background: var(--azul-50); border-radius: 12px; padding: 1.3rem; margin-top: 1.4rem; }
+.qr-pendiente > .ico { width: 28px; height: 28px; color: var(--azul-600); }
+.qr-pendiente h3 { font-size: .95rem; }
+.qr-pendiente p { font-size: .9rem; color: var(--tinta-2); margin: .5rem 0 0; }
+@media (max-width: 1200px) { .kpis-gestion { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1100px) and (min-width: 1000px), (max-width: 760px) {
+  .graficos-gestion { grid-template-columns: 1fr; }
+  .tiempos-gestion { grid-template-columns: 1fr; }
+}
+@media print {
+  .graficos-gestion { display: block; }
+  .grafico-tarjeta { margin-bottom: 1rem; }
+  .anillo-estados { width: 160px; }
+  .anillo-estados, .categoria-pista, .leyenda-nombre i { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }

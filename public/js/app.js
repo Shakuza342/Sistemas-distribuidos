@@ -1,6 +1,7 @@
-import { sesion, pedir, leer, escribir, vaciarCola, nuevoId, descargarConToken, alSesionVencida, SinConexion } from './api.js';
+import { sesion, pedir, leer, escribir, vaciarCola, nuevoId, alSesionVencida, SinConexion } from './api.js';
 import { pendientes, borrarTodo } from './almacen.js';
 import { ico } from './iconos.js';
+import { graficoEstados, graficoCategorias, porcentaje } from './reportes-vista.js';
 
 const $ = sel => document.querySelector(sel);
 const vista = $('#vista');
@@ -16,8 +17,8 @@ const ROLES = { vecino: 'Vecino', administrador: 'Administración', auditor: 'Co
 
 const MENU = {
   vecino: [['tablero', 'Tablero'], ['nueva', 'Nueva queja'], ['mias', 'Mis quejas']],
-  administrador: [['tablero', 'Tablero'], ['reportes', 'Reportes'], ['integridad', 'Integridad'], ['nodos', 'Nodos'], ['usuarios', 'Usuarios']],
-  auditor: [['tablero', 'Tablero'], ['reportes', 'Reportes'], ['integridad', 'Integridad'], ['nodos', 'Nodos']]
+  administrador: [['tablero', 'Tablero'], ['reportes', 'Reportes'], ['integridad', 'Integridad'], ['nodos', 'Conexión'], ['usuarios', 'Usuarios']],
+  auditor: [['tablero', 'Tablero'], ['reportes', 'Reportes'], ['integridad', 'Integridad'], ['nodos', 'Conexión']]
 };
 
 const PERMISOS = {
@@ -87,16 +88,6 @@ function pintarMenu(seccion) {
     `<a href="#/${ruta}" class="${seccion === ruta ? 'activo' : ''}" ${seccion === ruta ? 'aria-current="page"' : ''}>${ico(ruta)}<span>${texto}</span></a>`).join('');
 }
 
-async function cargarNodo() {
-  try {
-    const r = await fetch('/api/v1/estado').then(x => x.json());
-    $('#nombre-nodo').textContent = `${r.nodo.nombre}${sesion.usuario ? ' · ' + sesion.usuario.nombre : ''}`;
-    return r;
-  } catch {
-    $('#nombre-nodo').textContent = 'nodo sin respuesta · ' + (sesion.usuario?.nombre || '');
-    return null;
-  }
-}
 
 async function navegar() {
   const [, seccion = 'tablero', param] = location.hash.split('/');
@@ -149,7 +140,7 @@ function vistaLogin() {
       <ul class="login-valores">
         <li>${ico('comentario')}<div><strong>Tu voz tiene un lugar</strong><span>Registra y consulta las solicitudes del conjunto.</span></div></li>
         <li>${ico('integridad')}<div><strong>Seguimiento transparente</strong><span>Cada respuesta queda en el historial.</span></div></li>
-        <li>${ico('nodos')}<div><strong>Una comunidad conectada</strong><span>Los registros se comparten entre los nodos de la red.</span></div></li>
+        <li>${ico('nodos')}<div><strong>Una comunidad conectada</strong><span>Consulta las novedades y participa desde tu dispositivo.</span></div></li>
       </ul>
       <div class="login-pie">Veeduría ciudadana <span>·</span> Convivencia y confianza</div>
       </section>
@@ -159,32 +150,16 @@ function vistaLogin() {
         <h2 id="titulo-acceso">Bienvenido de nuevo</h2>
         <p class="acceso-descripcion">Ingresa con tu cuenta para participar y consultar las novedades de tu conjunto.</p>
         <label for="correo">Correo electrónico</label>
-        <input id="correo" name="correo" type="email" required autocomplete="username" placeholder="nombre@conjunto.co">
+        <input id="correo" name="correo" type="email" required autocomplete="username" placeholder="Ingresa tu correo">
         <label for="password">Contraseña</label>
         <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Tu contraseña">
         <div class="error-form" id="error-login"></div>
         <button class="boton primario ancho" style="margin-top:1.4rem">Ingresar al portal <span aria-hidden="true">→</span></button>
-        <details>
-          <summary>Usuarios de prueba</summary>
-          <table>
-            <tr><td>admin@conjunto.co</td><td>admin123</td><td><button type="button" class="boton pequeno" data-c="admin@conjunto.co" data-p="admin123">usar</button></td></tr>
-            <tr><td>consejo@conjunto.co</td><td>consejo123</td><td><button type="button" class="boton pequeno" data-c="consejo@conjunto.co" data-p="consejo123">usar</button></td></tr>
-            <tr><td>laura@conjunto.co</td><td>vecino123</td><td><button type="button" class="boton pequeno" data-c="laura@conjunto.co" data-p="vecino123">usar</button></td></tr>
-            <tr><td>carlos@conjunto.co</td><td>vecino123</td><td><button type="button" class="boton pequeno" data-c="carlos@conjunto.co" data-p="vecino123">usar</button></td></tr>
-          </table>
-        </details>
+        <p class="ayuda acceso-ayuda">Si necesitas una cuenta o ayuda para ingresar, comunícate con la administración del conjunto.</p>
       </form>
       <p class="acceso-nota">${ico('integridad')} Acceso para residentes, administración y consejo.</p>
-      <p class="ayuda" id="login-nodo"></p>
       </section>
     </div>`;
-
-  fetch('/api/v1/estado').then(r => r.json()).then(r => { $('#login-nodo').textContent = 'Conectado a: ' + r.nodo.nombre; }).catch(() => {});
-
-  vista.querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => {
-    $('#correo').value = b.dataset.c;
-    $('#password').value = b.dataset.p;
-  }));
 
   $('#form-login').addEventListener('submit', async ev => {
     ev.preventDefault();
@@ -194,7 +169,6 @@ function vistaLogin() {
     try {
       const r = await pedir('POST', '/auth/login', { correo: $('#correo').value, password: $('#password').value });
       sesion.guardar(r.token, r.usuario);
-      await cargarNodo();
       location.hash = '#/tablero';
       navegar();
     } catch (e) {
@@ -494,58 +468,55 @@ async function vistaDetalle(id) {
   });
 }
 
-function barras(objeto, etiquetas) {
-  const max = Math.max(1, ...Object.values(objeto));
-  return `<div class="barras">${Object.entries(objeto).map(([k, v]) => `
-    <div class="barra-dato"><span>${esc(etiquetas[k] || k)}</span>
-      <div class="pista"><div class="relleno r-${esc(k)}" style="width:${(v / max) * 100}%"></div></div><b>${v}</b></div>`).join('')}</div>`;
-}
-
-const horas = h => (h === null ? '—' : h < 1 ? `${Math.round(h * 60)} min` : h < 48 ? `${h} h` : `${Math.round(h / 24 * 10) / 10} d`);
+const horas = h => (h === null ? 'Sin datos' : h < 1 ? `${Math.round(h * 60)} min` : h < 48 ? `${h} h` : `${Math.round(h / 24 * 10) / 10} d`);
 
 async function vistaReportes() {
   const r = await pedir('GET', '/reportes/agregado');
   const tr = r.tiempo_primera_respuesta_horas;
+  const total = r.total_quejas;
+  const resueltas = r.por_estado.resuelta;
+  const pendientes = total - resueltas;
   vista.innerHTML = `
     <div class="encabezado-vista">
-      <div><span class="antetitulo">Para el consejo y la asamblea</span><h1>Reporte agregado</h1></div>
-      <button class="boton no-imprimir" id="imprimir">${ico('imprimir')}Imprimir / PDF para la asamblea</button>
+      <div><span class="antetitulo">Seguimiento de la comunidad</span><h1>Gestión de solicitudes</h1>
+        <p class="subtitulo-vista">Estado de las quejas, asuntos más frecuentes y tiempos de atención.</p></div>
+      <button class="boton no-imprimir" id="imprimir">${ico('imprimir')}Imprimir reporte</button>
     </div>
-    <p class="ayuda">Generado ${fecha(r.generado)} directamente desde la base de datos del nodo, sin pasar por reportes preparados por la administración.</p>
-    <div class="kpis">
-      <div class="kpi"><small>Quejas registradas</small><strong>${r.total_quejas}</strong></div>
-      <div class="kpi"><small>Sin resolver</small><strong>${r.total_quejas - r.por_estado.resuelta}</strong></div>
-      <div class="kpi"><small>Primera respuesta (promedio)</small><strong>${horas(tr.promedio)}</strong></div>
-      <div class="kpi ${tr.sin_respuesta_mas_de_72h ? 'mal' : 'bien'}"><small>Sin respuesta &gt; 72 h</small><strong>${tr.sin_respuesta_mas_de_72h}</strong></div>
-      <div class="kpi ${r.cobertura_auditoria.porcentaje === 100 ? 'bien' : 'mal'}"><small>Cobertura de auditoría</small><strong>${r.cobertura_auditoria.porcentaje}%</strong></div>
-      <div class="kpi ${r.integridad.porcentaje_verificable === 100 ? 'bien' : 'mal'}"><small>Cadena verificable</small><strong>${r.integridad.porcentaje_verificable}%</strong></div>
+    <p class="reporte-fecha">Actualizado ${fecha(r.generado)} · Todos los registros disponibles</p>
+    <div class="kpis kpis-gestion">
+      <div class="kpi"><small>Solicitudes registradas</small><strong>${total}</strong><span>Acumulado del conjunto</span></div>
+      <div class="kpi"><small>Pendientes de resolver</small><strong>${pendientes}</strong><span>Nuevas, vistas y en proceso</span></div>
+      <div class="kpi bien"><small>Resueltas</small><strong>${resueltas}</strong><span>${total ? porcentaje(resueltas, total) + ' % del total' : 'Aún no hay solicitudes'}</span></div>
+      <div class="kpi ${tr.sin_respuesta_mas_de_72h ? 'mal' : ''}"><small>Sin gestión inicial &gt; 72 h</small><strong>${tr.sin_respuesta_mas_de_72h}</strong><span>Sin un primer cambio de estado</span></div>
     </div>
-    <div class="tarjeta"><h2>Por estado</h2>${barras(r.por_estado, ESTADOS)}</div>
-    <div class="tarjeta"><h2>Por categoría</h2>${barras(r.por_categoria, CATEGORIAS)}</div>
-    <div class="tarjeta">
-      <h2>Tiempos de gestión</h2>
-      <table class="tabla">
-        <tr><td>Tiempo promedio a la primera respuesta</td><td><b>${horas(tr.promedio)}</b></td></tr>
-        <tr><td>Mediana a la primera respuesta</td><td><b>${horas(tr.mediana)}</b></td></tr>
-        <tr><td>Quejas con al menos una respuesta</td><td><b>${tr.quejas_con_respuesta}</b></td></tr>
-        <tr><td>Quejas que nunca recibieron respuesta</td><td><b>${tr.quejas_sin_respuesta}</b></td></tr>
-        <tr><td>Tiempo promedio hasta resolver</td><td><b>${horas(r.tiempo_resolucion_horas.promedio)}</b> (${r.tiempo_resolucion_horas.quejas_resueltas} resueltas)</td></tr>
-      </table>
+    <div class="graficos-gestion">
+      <section class="tarjeta grafico-tarjeta">
+        <div class="grafico-cabecera"><span class="antetitulo">Seguimiento</span><h2>Estado de las solicitudes</h2>
+        <p class="ayuda">Distribución actual de todas las quejas registradas.</p></div>
+        ${graficoEstados(r.por_estado)}
+      </section>
+      <section class="tarjeta grafico-tarjeta">
+        <div class="grafico-cabecera"><span class="antetitulo">Convivencia y mantenimiento</span><h2>Asuntos más reportados</h2>
+        <p class="ayuda">Categorías ordenadas por número de solicitudes.</p></div>
+        ${graficoCategorias(r.por_categoria)}
+      </section>
     </div>
-    <div class="tarjeta">
-      <h2>Quejas con más apoyo de los vecinos</h2>
-      ${r.mas_apoyadas.length ? `<table class="tabla"><tr><th>Queja</th><th>Categoría</th><th>Estado</th><th>Apoyos</th></tr>
-        ${r.mas_apoyadas.map(q => `<tr><td><a href="#/queja/${q.id}">${esc(q.titulo)}</a></td><td>${esc(CATEGORIAS[q.categoria])}</td><td>${chipEstado(q.estado)}</td><td>${q.apoyos}</td></tr>`).join('')}</table>`
-        : '<p class="ayuda">Ninguna queja ha recibido apoyos todavía.</p>'}
-    </div>
-    <div class="tarjeta">
-      <h2>Integridad y red</h2>
-      <p>${r.integridad.total_registros} registros revisados, ${r.integridad.problemas} con problemas, ${r.integridad.conflictos_de_sincronizacion} conflictos detectados al sincronizar.
-        Cobertura: ${r.cobertura_auditoria.quejas_en_reporte} de ${r.cobertura_auditoria.quejas_en_base_de_datos} quejas de la base aparecen en este reporte.</p>
-      <div class="desplazable"><table class="tabla"><tr><th>Nodo</th><th>Última sincronización</th></tr>
-        ${r.nodos.map(n => `<tr><td>${esc(n.nombre)}${n.es_local ? ' (este nodo)' : ''}</td><td>${n.es_local ? '—' : fecha(n.ultima_sync)}</td></tr>`).join('')}
-      </table></div>
-    </div>`;
+    <section class="tarjeta">
+      <h2>Tiempos de atención</h2>
+      <p class="ayuda">La primera gestión corresponde al primer cambio de estado registrado por la administración. Los comentarios no se cuentan como cambios de estado.</p>
+      <dl class="tiempos-gestion">
+        <div><dt>Primera gestión · promedio</dt><dd>${horas(tr.promedio)}</dd><small>${tr.quejas_con_respuesta} solicitudes con gestión registrada</small></div>
+        <div><dt>Primera gestión · mediana</dt><dd>${horas(tr.mediana)}</dd><small>Valor central de los tiempos registrados</small></div>
+        <div><dt>Resolución · promedio</dt><dd>${horas(r.tiempo_resolucion_horas.promedio)}</dd><small>${r.tiempo_resolucion_horas.quejas_resueltas} solicitudes resueltas</small></div>
+      </dl>
+    </section>
+    <section class="tarjeta">
+      <h2>Solicitudes con mayor apoyo</h2>
+      <p class="ayuda">Hasta cinco asuntos que más vecinos han respaldado.</p>
+      ${r.mas_apoyadas.length ? `<div class="desplazable"><table class="tabla"><thead><tr><th scope="col">Solicitud</th><th scope="col">Categoría</th><th scope="col">Estado</th><th scope="col">Apoyos</th></tr></thead><tbody>
+        ${r.mas_apoyadas.map(q => `<tr><td><a href="#/queja/${encodeURIComponent(q.id)}">${esc(q.titulo)}</a></td><td>${esc(CATEGORIAS[q.categoria])}</td><td>${chipEstado(q.estado)}</td><td>${q.apoyos}</td></tr>`).join('')}</tbody></table></div>`
+        : '<p class="vacio">Todavía no se han registrado apoyos.</p>'}
+    </section>`;
   $('#imprimir').addEventListener('click', () => window.print());
 }
 
@@ -596,74 +567,68 @@ async function vistaIntegridad() {
 
 async function vistaNodos() {
   const esAdmin = sesion.usuario.rol === 'administrador';
-  const r = await pedir('GET', '/nodos');
+  const [r, estado] = await Promise.all([pedir('GET', '/nodos'), pedir('GET', '/estado')]);
   const peers = r.nodos.filter(n => n.es_peer);
-  const otros = r.nodos.filter(n => !n.es_peer && !n.es_local);
+  const acceso = estado.acceso_movil || { url: null };
 
   vista.innerHTML = `
-    <span class="antetitulo">Red del conjunto</span>
-    <h1>Nodos de la red</h1>
-    <div class="tarjeta">
-      <h2>Este nodo</h2>
-      <div class="qr">
-        <img src="/qr.png" alt="Código QR para abrir la aplicación">
+    <span class="antetitulo">Acceso y disponibilidad</span>
+    <h1>Conexión de la comunidad</h1>
+    <section class="tarjeta acceso-movil">
+      <h2>${ico('casa')}Abrir en el celular</h2>
+      ${acceso.url ? `<div class="qr">
+        <img id="qr-movil" src="/qr.png?v=${encodeURIComponent(acceso.url)}" alt="Código QR con el enlace de acceso al conjunto" width="208" height="208">
         <div>
-          <p><b>${esc(r.local.nombre)}</b><br>${esc(r.local.url || '')}<br><span class="hash">${esc(r.local.id)}</span></p>
-          <p class="ayuda">Los vecinos escanean este código para abrir la aplicación en su celular, sin tiendas de aplicaciones. Se sincroniza con sus pares cada ${r.intervalo_segundos} s.</p>
+          <h3>Escanea para ingresar</h3>
+          <p>Conecta el celular al mismo Wi-Fi del computador y escanea el código con la cámara.</p>
+          <label for="enlace-movil">Dirección de acceso</label>
+          <input id="enlace-movil" type="text" value="${esc(acceso.url)}" readonly>
+          <div class="acciones"><a class="boton" href="${esc(acceso.url)}" target="_blank" rel="noopener">Abrir enlace</a></div>
+          <p class="ayuda">El computador y Docker deben permanecer encendidos. Si no abre, prueba primero esta dirección en el navegador del celular.</p>
         </div>
-      </div>
-    </div>
-    <div class="tarjeta">
-      <div class="encabezado-vista"><h2>Pares configurados</h2>
-        ${esAdmin ? `<button class="boton primario pequeno" id="sync-todos">${ico('sync')}Sincronizar ahora</button>` : ''}</div>
-      <div class="desplazable"><table class="tabla"><tr><th>Nodo</th><th>Dirección</th><th>Última sincronización</th><th>Estado</th></tr>
-        ${peers.map(n => `<tr><td>${esc(n.nombre)}</td><td class="hash">${esc(n.url)}</td><td>${n.ultima_sync ? hace(n.ultima_sync) : 'nunca'}</td>
-          <td>${n.circuito?.estado === 'abierto' ? `<span class="sello mal" title="${esc(n.ultimo_error || '')}">en pausa ${n.circuito.reintento_en_s} s</span>` : n.ultimo_error ? `<span class="sello mal" title="${esc(n.ultimo_error)}">sin conexión</span>` : n.ultima_sync ? '<span class="sello ok">conectado</span>' : '—'}</td></tr>`).join('') || '<tr><td colspan="4">No hay pares configurados.</td></tr>'}
-      </table></div>
-      <div id="resultado-sync"></div>
-      ${esAdmin ? `<form id="form-peer" class="acciones">
-        <input id="url-peer" aria-label="Dirección del nodo par" placeholder="http://192.168.1.20:3002" style="flex:1;min-width:220px" required>
-        <button class="boton">Agregar par</button></form>` : ''}
-    </div>
-    ${otros.length ? `<div class="tarjeta"><h2>Otros nodos conocidos</h2><p class="ayuda">Nodos de los que llegaron registros a través de terceros.</p>
-      <ul>${otros.map(n => `<li>${esc(n.nombre)} ${n.ultima_sync ? `· contactó ${hace(n.ultima_sync)}` : ''}</li>`).join('')}</ul></div>` : ''}
-    ${esAdmin ? `<div class="tarjeta">
-      <h2>Sincronización por USB</h2>
-      <p class="ayuda">Para nodos sin red: exporte el paquete a una memoria USB e impórtelo en el otro equipo. Se aplican las mismas validaciones de hash que en la red.</p>
-      <div class="acciones">
-        <button class="boton" id="exportar">${ico('descargar')}Exportar paquete</button>
-        <label class="boton boton-archivo">${ico('subir')}Importar paquete<input type="file" id="importar" accept=".json,application/json" hidden></label>
-      </div>
-    </div>` : ''}`;
+      </div><p id="error-qr" class="alerta info" hidden>No se pudo cargar el código QR. Puedes utilizar la dirección de acceso o recargar la página.</p>` : `
+        <div class="qr-pendiente">${ico('nodos')}<div><h3>Falta configurar la dirección de acceso</h3>
+        <p>La dirección actual solo funciona dentro del computador. Configura su dirección de red para que el celular pueda abrir la aplicación.</p></div></div>`}
+      <details class="configuracion-red">
+        <summary>Configurar el acceso desde el celular</summary>
+        <ol>
+          <li>En el computador que ejecuta Docker, abre PowerShell y ejecuta <code>ipconfig</code>.</li>
+          <li>Busca la dirección IPv4 del adaptador Wi-Fi o Ethernet conectado a tu red. No uses la dirección de Docker, WSL ni una conexión VPN.</li>
+          <li>En el archivo <code>.env</code> del proyecto, cambia <code>HOST_IP</code> por esa IPv4, sin agregar el puerto.</li>
+          <li>Guarda y ejecuta <code>docker compose up -d --build</code>. Luego recarga esta página.</li>
+        </ol>
+        <p class="ayuda">Si el enlace no abre en el celular, comprueba que ambos equipos estén en la misma red y que el firewall permita el puerto del servicio. Una red de invitados puede bloquear la conexión entre dispositivos.</p>
+      </details>
+    </section>
+    <details class="tarjeta configuracion-red detalles-nodos">
+      <summary>Estado de conexión entre equipos</summary>
+      <p class="ayuda">Información para la administración y el consejo. La sincronización automática se realiza cada ${r.intervalo_segundos} segundos.</p>
+      <div class="desplazable"><table class="tabla"><thead><tr><th scope="col">Equipo</th><th scope="col">Última sincronización</th><th scope="col">Estado</th></tr></thead><tbody>
+        ${peers.map(n => `<tr><td>${esc(n.nombre)}</td><td>${n.ultima_sync ? hace(n.ultima_sync) : 'Sin sincronizar'}</td>
+          <td>${n.circuito?.estado === 'abierto' ? '<span class="sello mal">Reconectando</span>' : n.ultimo_error ? '<span class="sello mal">Sin conexión</span>' : n.ultima_sync ? '<span class="sello ok">Conectado</span>' : '<span class="sello">Pendiente</span>'}</td></tr>`).join('') || '<tr><td colspan="3">No hay otros equipos configurados.</td></tr>'}
+      </tbody></table></div>
+      ${esAdmin ? `<div class="acciones"><button class="boton" id="sync-todos">${ico('sync')}Sincronizar ahora</button></div>` : ''}
+      <div id="resultado-sync" role="status" aria-live="polite"></div>
+    </details>`;
 
+  $('#enlace-movil')?.addEventListener('focus', ev => ev.target.select());
+  const imagenQR = $('#qr-movil');
+  if (imagenQR) {
+    const mostrarError = () => { imagenQR.hidden = true; $('#error-qr').hidden = false; };
+    imagenQR.addEventListener('error', mostrarError);
+    if (imagenQR.complete && !imagenQR.naturalWidth) mostrarError();
+  }
   $('#sync-todos')?.addEventListener('click', async ev => {
-    ev.target.disabled = true;
-    const res = await pedir('POST', '/nodos/sincronizar-ahora');
-    $('#resultado-sync').innerHTML = res.map(x => `<div class="alerta ${x.ok ? (x.conflictos.length ? 'mal' : 'ok') : 'info'}">
-      ${x.ok ? `${esc(x.nodo)}: recibidos ${x.recibidos}, enviados ${x.enviados}${x.conflictos.length ? `, <b>${x.conflictos.length} conflicto(s)</b> (ver Integridad)` : ''}` : `${esc(x.url)}: ${esc(x.error)}`}</div>`).join('');
-    setTimeout(vistaNodos, 2500);
-  });
-
-  $('#form-peer')?.addEventListener('submit', async ev => {
-    ev.preventDefault();
+    const boton = ev.currentTarget;
+    boton.disabled = true;
     try {
-      await pedir('POST', '/nodos', { url: $('#url-peer').value.trim() });
-      aviso('Par agregado. Se sincronizará en el próximo ciclo.');
-      vistaNodos();
-    } catch (e) { aviso(e.message, true); }
-  });
-
-  $('#exportar')?.addEventListener('click', () => descargarConToken('/nodos/exportar', 'veeduria.json').catch(e => aviso(e.message, true)));
-
-  $('#importar')?.addEventListener('change', async ev => {
-    const archivo = ev.target.files[0];
-    if (!archivo) return;
-    try {
-      const paquete = JSON.parse(await archivo.text());
-      const res = await pedir('POST', '/nodos/importar', paquete);
-      aviso(`Importados ${res.insertados} registros${res.conflictos.length ? `, ${res.conflictos.length} conflictos (ver Integridad)` : ''}.`, res.conflictos.length > 0);
-    } catch (e) { aviso('No se pudo importar: ' + e.message, true); }
-    ev.target.value = '';
+      const res = await pedir('POST', '/nodos/sincronizar-ahora');
+      const fallidos = res.filter(x => !x.ok).length;
+      const conflictos = res.reduce((n, x) => n + (x.conflictos?.length || 0), 0);
+      $('#resultado-sync').innerHTML = `<p class="alerta ${fallidos || conflictos ? 'info' : 'ok'}">${!res.length ? 'No hubo sincronizaciones nuevas. Puedes consultar el estado en la tabla.' : fallidos ? 'Algunos equipos no respondieron. Se volverá a intentar automáticamente.' : conflictos ? 'La sincronización detectó diferencias. Consulta la sección Integridad.' : 'Sincronización completada.'}</p>`;
+    } catch (e) {
+      $('#resultado-sync').textContent = e.message;
+    } finally { boton.disabled = false; }
   });
 }
 
@@ -682,11 +647,11 @@ async function vistaUsuarios() {
       <label for="u-pass">Contraseña inicial</label><input id="u-pass" type="password" minlength="6" required>
       <div class="error-form" id="error-usuario"></div>
       <div class="acciones"><button class="boton primario">Crear usuario</button></div>
-      <p class="ayuda">El usuario se replica a los demás nodos en la siguiente sincronización. La contraseña se guarda solo como hash bcrypt.</p>
+      <p class="ayuda">La cuenta tendrá acceso a las funciones del rol seleccionado.</p>
     </form>
     <div class="tarjeta desplazable">
-      <table class="tabla"><tr><th>Nombre</th><th>Correo</th><th>Unidad</th><th>Rol</th><th>Creado en</th></tr>
-        ${lista.map(u => `<tr><td>${esc(u.nombre)}</td><td>${esc(u.correo)}</td><td>${esc(u.unidad_residencial)}</td><td>${esc(ROLES[u.rol])}</td><td>${esc(u.nodo_nombre || '—')}</td></tr>`).join('')}
+      <table class="tabla"><tr><th>Nombre</th><th>Correo</th><th>Unidad</th><th>Rol</th></tr>
+        ${lista.map(u => `<tr><td>${esc(u.nombre)}</td><td>${esc(u.correo)}</td><td>${esc(u.unidad_residencial)}</td><td>${esc(ROLES[u.rol])}</td></tr>`).join('')}
       </table>
     </div>`;
 
@@ -750,7 +715,7 @@ $('#boton-salir').addEventListener('click', async () => {
   if (confirm(pregunta)) cerrarSesion();
 });
 window.addEventListener('hashchange', navegar);
-window.addEventListener('online', () => { actualizarChipRed(); cargarNodo(); sincronizar(true); });
+window.addEventListener('online', () => { actualizarChipRed(); sincronizar(true); });
 window.addEventListener('offline', actualizarChipRed);
 setInterval(async () => { if (navigator.onLine && (await pendientes()).length) sincronizar(true); }, 20000);
 
@@ -758,6 +723,5 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(e => console.warn('Service worker no registrado:', e.message));
 }
 
-cargarNodo();
 actualizarChipRed();
 navegar();

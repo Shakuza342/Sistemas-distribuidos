@@ -1,9 +1,10 @@
-const VERSION = 'veeduria-v6';
+const VERSION = 'veeduria-v7';
 const ARCHIVOS = [
   '/',
   '/index.html',
   '/css/estilos.css',
   '/js/app.js',
+  '/js/reportes-vista.js',
   '/js/api.js',
   '/js/almacen.js',
   '/manifest.webmanifest',
