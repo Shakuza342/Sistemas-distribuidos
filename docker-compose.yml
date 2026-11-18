@@ -1,0 +1,57 @@
+# Red de veeduría con 3 nodos en contenedores, en un solo computador.
+# Cada nodo tiene su propio volumen (su propio archivo SQLite) y se sincroniza
+# con los otros dos por la red interna de Docker.
+#
+# Uso:  docker compose up -d --build
+# Antes, copie .env.example a .env y ponga en HOST_IP la IP del PC en el wifi
+# para que el código QR funcione desde los celulares.
+
+x-nodo: &nodo
+  build: .
+  restart: unless-stopped
+  networks: [red-conjunto]
+  environment: &comun
+    CLAVE_RED: ${CLAVE_RED:-clave-compartida-del-conjunto-cambiar}
+    JWT_SECRETO: ${JWT_SECRETO:-secreto-jwt-del-conjunto-cambiar}
+
+services:
+  nodo1:
+    <<: *nodo
+    container_name: veeduria-nodo1
+    environment:
+      <<: *comun
+      VEEDURIA_CONFIG: nodos/docker/nodo1.json
+      PUERTO: "3001"
+      URL_PUBLICA: http://${HOST_IP:-localhost}:3001
+    ports: ["3001:3001"]
+    volumes: [datos-nodo1:/app/datos]
+
+  nodo2:
+    <<: *nodo
+    container_name: veeduria-nodo2
+    environment:
+      <<: *comun
+      VEEDURIA_CONFIG: nodos/docker/nodo2.json
+      PUERTO: "3002"
+      URL_PUBLICA: http://${HOST_IP:-localhost}:3002
+    ports: ["3002:3002"]
+    volumes: [datos-nodo2:/app/datos]
+
+  nodo3:
+    <<: *nodo
+    container_name: veeduria-nodo3
+    environment:
+      <<: *comun
+      VEEDURIA_CONFIG: nodos/docker/nodo3.json
+      PUERTO: "3003"
+      URL_PUBLICA: http://${HOST_IP:-localhost}:3003
+    ports: ["3003:3003"]
+    volumes: [datos-nodo3:/app/datos]
+
+networks:
+  red-conjunto:
+
+volumes:
+  datos-nodo1:
+  datos-nodo2:
+  datos-nodo3:

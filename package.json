@@ -1,0 +1,36 @@
+{
+  "name": "veeduria-p2p",
+  "version": "1.0.0",
+  "description": "Red de veeduría ciudadana P2P - red distribuida para el procesamiento de quejas en conjuntos residenciales",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.js --config nodos/nodo1.json",
+    "nodo1": "node --disable-warning=ExperimentalWarning src/server.js --config nodos/nodo1.json",
+    "nodo2": "node --disable-warning=ExperimentalWarning src/server.js --config nodos/nodo2.json",
+    "nodo3": "node --disable-warning=ExperimentalWarning src/server.js --config nodos/nodo3.json",
+    "red": "node --disable-warning=ExperimentalWarning scripts/red.js",
+    "demo": "node --disable-warning=ExperimentalWarning scripts/datos-demo.js",
+    "manipular": "node --disable-warning=ExperimentalWarning scripts/manipular.js",
+    "reiniciar": "node scripts/reiniciar.js",
+    "test": "node --disable-warning=ExperimentalWarning --test test/red.test.js",
+    "carga": "node --disable-warning=ExperimentalWarning scripts/carga.js",
+    "fallos": "node --disable-warning=ExperimentalWarning scripts/fallos.js",
+    "docker:arriba": "docker compose up -d --build",
+    "docker:abajo": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:reiniciar": "docker compose down -v",
+    "docker:prueba": "node --disable-warning=ExperimentalWarning scripts/prueba-docker.js"
+  },
+  "author": "Joseph Vanegas, Samith Amariles, Juan Gomez",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "express": "^4.22.3",
+    "jsonwebtoken": "^9.0.3",
+    "qrcode": "^1.5.4"
+  }
+}

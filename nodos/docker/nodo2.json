@@ -1,0 +1,14 @@
+{
+  "nombre": "Nodo Vecino Torre 1",
+  "puerto": 3002,
+  "host": "0.0.0.0",
+  "db": "/app/datos/nodo2.db",
+  "urlPublica": "http://localhost:3002",
+  "peers": ["http://nodo1:3001", "http://nodo3:3003"],
+  "intervaloSyncSegundos": 30,
+  "timeoutSyncMs": 8000,
+  "claveRed": "clave-compartida-del-conjunto-cambiar",
+  "jwtSecreto": "secreto-jwt-del-conjunto-cambiar",
+  "semilla": false,
+  "https": null
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Veeduría del conjunto",
+  "short_name": "Veeduría",
+  "description": "Registro y seguimiento transparente de quejas del conjunto residencial, sin intermediarios",
+  "lang": "es-CO",
+  "start_url": "/#/tablero",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f7fb",
+  "theme_color": "#0e3a7a",
+  "icons": [
+    { "src": "/iconos/icono-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/iconos/icono-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/iconos/icono-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

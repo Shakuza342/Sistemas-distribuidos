@@ -1,0 +1,88 @@
+{
+  "fecha": "2026-11-18T00:55:08.642Z",
+  "node": "v22.23.4",
+  "so": "Linux 6.18.44-fc-v595",
+  "cpu": "Intel(R) Xeon(R) Processor @ 2.30GHz",
+  "nucleos": 2,
+  "caida_vecino": {
+    "quejas_aceptadas_durante_caida": 20,
+    "quejas_en_A_y_B_durante_caida": [
+      20,
+      20
+    ],
+    "visto_desde_A": {
+      "ultimo_error": "2026-11-18T00:54:29.251Z ECONNREFUSED",
+      "circuito": {
+        "estado": "abierto",
+        "fallos": 3,
+        "reintento_en_s": 1
+      }
+    },
+    "ms_para_que_C_se_ponga_al_dia": 837,
+    "desde_reinicio_ms": 1049
+  },
+  "caida_administracion": {
+    "quejas_registradas_en_B_sin_A": 10,
+    "ms_replicacion_B_a_C_sin_A": 207,
+    "ms_para_que_A_se_ponga_al_dia": 217
+  },
+  "peer_colgado": {
+    "primer_ciclo_forzado": {
+      "ms": 3013,
+      "resultados": [
+        {
+          "url": "http://127.0.0.1:4203",
+          "ok": true,
+          "ms": 18
+        },
+        {
+          "url": "http://127.0.0.1:4202",
+          "ok": true,
+          "ms": 19
+        },
+        {
+          "url": "http://127.0.0.1:4299",
+          "ok": false,
+          "error": "Tiempo de espera agotado"
+        }
+      ]
+    },
+    "circuito_tras_ciclos_automaticos": {
+      "estado": "abierto",
+      "fallos": 5,
+      "reintento_en_s": 14
+    }
+  },
+  "edicion_directa": {
+    "porcentaje_verificable": {
+      "Nodo A (administración)": 100,
+      "Nodo B (vecino)": 96.67,
+      "Nodo C (vecino)": 100
+    },
+    "conflictos": {
+      "Nodo A (administración)": [
+        "version_distinta"
+      ],
+      "Nodo B (vecino)": [
+        "version_distinta",
+        "version_distinta"
+      ],
+      "Nodo C (vecino)": [
+        "version_distinta"
+      ]
+    },
+    "descripcion_en_A_sigue_original": true
+  },
+  "borrado_forzado": {
+    "quejas_en_A_despues_del_borrado": 29,
+    "ms_desde_reinicio_hasta_restaurar": 209,
+    "quejas_ahora": 30,
+    "registros_restaurados": [
+      "queja"
+    ]
+  },
+  "intruso": {
+    "status": 401,
+    "quejas_en_A": 30
+  }
+}

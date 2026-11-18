@@ -1,0 +1,41 @@
+{
+  "fecha": "2026-11-18T01:45:34.701Z",
+  "node": "v22.23.4",
+  "so": "Linux 6.18.44-fc-v595",
+  "cpu": "Intel(R) Xeon(R) Processor @ 2.30GHz",
+  "nucleos": 2,
+  "qr_apunta_a": "http://192.168.1.10:3001",
+  "contenedor_detenido": {
+    "quejas_aceptadas": 10,
+    "ms_desde_docker_start_hasta_al_dia": 1836
+  },
+  "admin_detenido": {
+    "quejas_en_nodo2": 5,
+    "ms_hasta_llegar_al_nodo3_sin_admin": 2439,
+    "nota": "llega en el siguiente ciclo automático (cada 30 s)",
+    "ms_desde_docker_start_hasta_al_dia": 1830
+  },
+  "alteracion_en_contenedor": {
+    "nodo1": {
+      "porcentaje_verificable": 100,
+      "conflictos": [
+        "version_distinta"
+      ]
+    },
+    "nodo2": {
+      "porcentaje_verificable": 97.44,
+      "conflictos": [
+        "version_distinta"
+      ]
+    },
+    "nodo3": {
+      "porcentaje_verificable": 100,
+      "conflictos": []
+    }
+  },
+  "contenedores": [
+    "veeduria-nodo1 Up 2 seconds (health: starting)",
+    "veeduria-nodo3 Up 6 seconds (healthy)",
+    "veeduria-nodo2 Up 32 seconds (healthy)"
+  ]
+}

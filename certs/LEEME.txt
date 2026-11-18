@@ -1,0 +1,6 @@
+Aquí van los certificados HTTPS de cada nodo cuando se use la app desde celulares.
+Se generan con mkcert, por ejemplo:
+
+  mkcert -cert-file certs/nodo1.pem -key-file certs/nodo1-key.pem localhost 127.0.0.1 192.168.1.10
+
+Los pasos completos están en GUIA.md, sección 5.10.

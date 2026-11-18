@@ -1,0 +1,17 @@
+{
+  "nombre": "Nodo Administración",
+  "puerto": 3001,
+  "host": "0.0.0.0",
+  "db": "datos/nodo1.db",
+  "urlPublica": "http://localhost:3001",
+  "peers": [
+    "http://localhost:3002",
+    "http://localhost:3003"
+  ],
+  "intervaloSyncSegundos": 30,
+  "claveRed": "clave-compartida-del-conjunto-cambiar",
+  "jwtSecreto": "secreto-jwt-del-conjunto-cambiar",
+  "semilla": true,
+  "https": null,
+  "timeoutSyncMs": 8000
+}

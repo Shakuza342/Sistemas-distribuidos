@@ -1,0 +1,25 @@
+{
+  "descripcion": "Lecturas del tablero (500, de a 20) mientras 100 usuarios inician sesión (de a 10), con bcrypt.compareSync frente a bcrypt.compare",
+  "compareSync": {
+    "n": 500,
+    "promedio_ms": 312.4,
+    "p50_ms": 101.5,
+    "p95_ms": 666.2,
+    "p99_ms": 4051,
+    "max_ms": 6965.9,
+    "errores": 0,
+    "duracion_s": 7.85,
+    "por_segundo": 63.7
+  },
+  "compare_asincrono": {
+    "n": 500,
+    "promedio_ms": 305.8,
+    "p50_ms": 318.4,
+    "p95_ms": 731.1,
+    "p99_ms": 799.6,
+    "max_ms": 2737.2,
+    "errores": 0,
+    "duracion_s": 8.05,
+    "por_segundo": 62.1
+  }
+}

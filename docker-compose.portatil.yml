@@ -1,0 +1,27 @@
+# Un solo nodo por portátil, para repartir la red entre varios computadores
+# conectados al mismo wifi. Cada integrante lo arranca en su equipo con su .env:
+#   NOMBRE_NODO=Nodo de Samith
+#   HOST_IP=192.168.1.12          (IP de este portátil)
+#   PEERS=http://192.168.1.10:3001,http://192.168.1.11:3001   (IP de los otros)
+#   SEMILLA=false                 (true solo en uno de los portátiles)
+# Uso: docker compose -f docker-compose.portatil.yml up -d --build
+
+services:
+  nodo:
+    build: .
+    container_name: veeduria-nodo
+    restart: unless-stopped
+    environment:
+      VEEDURIA_CONFIG: nodos/docker/nodo1.json
+      PUERTO: "3001"
+      NOMBRE_NODO: ${NOMBRE_NODO:-Nodo portátil}
+      URL_PUBLICA: http://${HOST_IP:-localhost}:3001
+      PEERS: ${PEERS:-}
+      SEMILLA: ${SEMILLA:-false}
+      CLAVE_RED: ${CLAVE_RED:-clave-compartida-del-conjunto-cambiar}
+      JWT_SECRETO: ${JWT_SECRETO:-secreto-jwt-del-conjunto-cambiar}
+    ports: ["3001:3001"]
+    volumes: [datos-nodo:/app/datos]
+
+volumes:
+  datos-nodo:
