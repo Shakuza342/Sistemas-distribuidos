@@ -79,11 +79,12 @@ async function actualizarChipRed() {
 
 function pintarMenu(seccion) {
   const u = sesion.usuario;
+  document.body.classList.toggle('sesion-activa', Boolean(u));
   $('#barra').hidden = !u;
   $('#menu').hidden = !u;
   if (!u) return;
   $('#menu').innerHTML = MENU[u.rol].map(([ruta, texto]) =>
-    `<a href="#/${ruta}" class="${seccion === ruta ? 'activo' : ''}">${ico(ruta)}<span>${texto}</span></a>`).join('');
+    `<a href="#/${ruta}" class="${seccion === ruta ? 'activo' : ''}" ${seccion === ruta ? 'aria-current="page"' : ''}>${ico(ruta)}<span>${texto}</span></a>`).join('');
 }
 
 async function cargarNodo() {
@@ -132,22 +133,37 @@ async function navegar() {
 function vistaLogin() {
   vista.innerHTML = `
     <div class="login">
+      <section class="login-presentacion" aria-labelledby="titulo-bienvenida">
       <div class="logo">
-        <img src="/iconos/arbol.svg" alt="" width="64" height="64">
+        <img src="/iconos/comunidad.png" alt="" width="64" height="64">
         <div>
-          <span class="antetitulo">Registro público del conjunto</span>
-          <h1>Veeduría</h1>
+          <strong class="marca-nombre">Veeduría</strong>
+          <span class="marca-descriptor">DEL CONJUNTO</span>
         </div>
       </div>
-      <p class="lema">Las quejas que se registran aquí quedan copiadas en todos los equipos del conjunto. Nadie, ni siquiera la administración, puede borrarlas.</p>
-      <p class="ayuda" id="login-nodo"></p>
+      <div class="login-mensaje">
+        <span class="antetitulo">Participación y transparencia</span>
+        <h1 id="titulo-bienvenida">Una comunidad<br>que se escucha.</h1>
+        <p class="lema">Un espacio para expresar lo que importa, seguir cada solicitud y construir un mejor lugar para vivir.</p>
+      </div>
+      <ul class="login-valores">
+        <li>${ico('comentario')}<div><strong>Tu voz tiene un lugar</strong><span>Registra y consulta las solicitudes del conjunto.</span></div></li>
+        <li>${ico('integridad')}<div><strong>Seguimiento transparente</strong><span>Cada respuesta queda en el historial.</span></div></li>
+        <li>${ico('nodos')}<div><strong>Una comunidad conectada</strong><span>Los registros se comparten entre los nodos de la red.</span></div></li>
+      </ul>
+      <div class="login-pie">Veeduría ciudadana <span>·</span> Convivencia y confianza</div>
+      </section>
+      <section class="login-acceso" aria-labelledby="titulo-acceso">
       <form class="tarjeta" id="form-login" autocomplete="on">
-        <label for="correo">Correo</label>
-        <input id="correo" name="correo" type="email" required autocomplete="username">
+        <span class="antetitulo">Portal de la comunidad</span>
+        <h2 id="titulo-acceso">Bienvenido de nuevo</h2>
+        <p class="acceso-descripcion">Ingresa con tu cuenta para participar y consultar las novedades de tu conjunto.</p>
+        <label for="correo">Correo electrónico</label>
+        <input id="correo" name="correo" type="email" required autocomplete="username" placeholder="nombre@conjunto.co">
         <label for="password">Contraseña</label>
-        <input id="password" name="password" type="password" required autocomplete="current-password">
+        <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Tu contraseña">
         <div class="error-form" id="error-login"></div>
-        <button class="boton primario ancho" style="margin-top:1rem">Ingresar</button>
+        <button class="boton primario ancho" style="margin-top:1.4rem">Ingresar al portal <span aria-hidden="true">→</span></button>
         <details>
           <summary>Usuarios de prueba</summary>
           <table>
@@ -158,6 +174,9 @@ function vistaLogin() {
           </table>
         </details>
       </form>
+      <p class="acceso-nota">${ico('integridad')} Acceso para residentes, administración y consejo.</p>
+      <p class="ayuda" id="login-nodo"></p>
+      </section>
     </div>`;
 
   fetch('/api/v1/estado').then(r => r.json()).then(r => { $('#login-nodo').textContent = 'Conectado a: ' + r.nodo.nombre; }).catch(() => {});
@@ -204,15 +223,16 @@ async function vistaTablero(soloMias) {
       <div>
         <span class="antetitulo" id="conteo">Libro de quejas</span>
         <h1>${soloMias ? 'Mis quejas' : 'Tablero de quejas'}</h1>
+        <p class="subtitulo-vista">${soloMias ? 'Consulta el avance de tus solicitudes y las respuestas recibidas.' : 'Cada solicitud cuenta. Sigue lo que sucede en tu comunidad.'}</p>
       </div>
       ${u.rol === 'vecino' ? `<a class="boton primario" href="#/nueva">${ico('nueva')}Nueva queja</a>` : ''}
     </div>
     ${desdeCache ? '<div class="alerta info">Sin conexión con el nodo: se muestra la última copia guardada en este dispositivo.</div>' : ''}
     <div class="filtros">
-      <select id="f-categoria"><option value="">Todas las categorías</option>
+      <select id="f-categoria" aria-label="Filtrar por categoría"><option value="">Todas las categorías</option>
         ${Object.entries(CATEGORIAS).map(([k, v]) => `<option value="${k}" ${filtros.categoria === k ? 'selected' : ''}>${v}</option>`).join('')}
       </select>
-      <select id="f-estado"><option value="">Todos los estados</option>
+      <select id="f-estado" aria-label="Filtrar por estado"><option value="">Todos los estados</option>
         ${Object.entries(ESTADOS).map(([k, v]) => `<option value="${k}" ${filtros.estado === k ? 'selected' : ''}>${v}</option>`).join('')}
       </select>
       <label class="casilla"><input type="checkbox" id="f-abiertas" ${filtros.abiertas ? 'checked' : ''}> Solo sin resolver</label>
@@ -602,7 +622,7 @@ async function vistaNodos() {
       </table></div>
       <div id="resultado-sync"></div>
       ${esAdmin ? `<form id="form-peer" class="acciones">
-        <input id="url-peer" placeholder="http://192.168.1.20:3002" style="flex:1;min-width:220px" required>
+        <input id="url-peer" aria-label="Dirección del nodo par" placeholder="http://192.168.1.20:3002" style="flex:1;min-width:220px" required>
         <button class="boton">Agregar par</button></form>` : ''}
     </div>
     ${otros.length ? `<div class="tarjeta"><h2>Otros nodos conocidos</h2><p class="ayuda">Nodos de los que llegaron registros a través de terceros.</p>
@@ -714,6 +734,12 @@ alSesionVencida.fn = () => {
   aviso('La sesión venció, ingrese de nuevo. Lo que estaba en cola se conserva.', true);
   cerrarSesion(false);
 };
+
+document.querySelector('.saltar-contenido').addEventListener('click', ev => {
+  ev.preventDefault();
+  vista.focus();
+  vista.scrollIntoView({ block: 'start' });
+});
 
 $('#boton-sync').addEventListener('click', () => sincronizar(false));
 $('#boton-salir').addEventListener('click', async () => {

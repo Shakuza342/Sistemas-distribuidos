@@ -3,20 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0e3a7a">
+  <meta name="theme-color" content="#152f3a">
   <meta name="description" content="Red de veeduría ciudadana P2P: registro y seguimiento transparente de quejas del conjunto residencial">
   <title>Veeduría del conjunto</title>
   <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="icon" href="/iconos/arbol.svg" type="image/svg+xml">
+  <link rel="icon" href="/iconos/icono-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/iconos/icono-192.png">
   <link rel="preload" href="/fuentes/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fuentes/atkinson-hyperlegible-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/estilos.css">
 </head>
 <body>
+  <a class="saltar-contenido" href="#vista">Saltar al contenido</a>
   <header class="barra" id="barra" hidden>
     <div class="barra-marca">
-      <img src="/iconos/arbol.svg" alt="" width="36" height="36">
+      <img src="/iconos/comunidad.png" alt="" width="36" height="36">
       <div>
         <strong>Veeduría del conjunto</strong>
         <small id="nombre-nodo">conectando…</small>
@@ -30,9 +31,9 @@
   </header>
 
 
-  <nav class="menu" id="menu" hidden></nav>
+  <nav aria-label="Navegación principal" class="menu" id="menu" hidden></nav>
 
-  <main id="vista" class="vista"></main>
+  <main tabindex="-1" id="vista" class="vista"></main>
 
   <div id="aviso" class="aviso" role="status" aria-live="polite"></div>
 
