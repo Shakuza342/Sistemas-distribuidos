@@ -1,4 +1,4 @@
-const VERSION = 'veeduria-v7';
+const VERSION = 'veeduria-v8';
 const ARCHIVOS = [
   '/',
   '/index.html',

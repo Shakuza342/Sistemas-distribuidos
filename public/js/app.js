@@ -589,16 +589,7 @@ async function vistaNodos() {
       </div><p id="error-qr" class="alerta info" hidden>No se pudo cargar el código QR. Puedes utilizar la dirección de acceso o recargar la página.</p>` : `
         <div class="qr-pendiente">${ico('nodos')}<div><h3>Falta configurar la dirección de acceso</h3>
         <p>La dirección actual solo funciona dentro del computador. Configura su dirección de red para que el celular pueda abrir la aplicación.</p></div></div>`}
-      <details class="configuracion-red">
-        <summary>Configurar el acceso desde el celular</summary>
-        <ol>
-          <li>En el computador que ejecuta Docker, abre PowerShell y ejecuta <code>ipconfig</code>.</li>
-          <li>Busca la dirección IPv4 del adaptador Wi-Fi o Ethernet conectado a tu red. No uses la dirección de Docker, WSL ni una conexión VPN.</li>
-          <li>En el archivo <code>.env</code> del proyecto, cambia <code>HOST_IP</code> por esa IPv4, sin agregar el puerto.</li>
-          <li>Guarda y ejecuta <code>docker compose up -d --build</code>. Luego recarga esta página.</li>
-        </ol>
-        <p class="ayuda">Si el enlace no abre en el celular, comprueba que ambos equipos estén en la misma red y que el firewall permita el puerto del servicio. Una red de invitados puede bloquear la conexión entre dispositivos.</p>
-      </details>
+      
     </section>
     <details class="tarjeta configuracion-red detalles-nodos">
       <summary>Estado de conexión entre equipos</summary>
